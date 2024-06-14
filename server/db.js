@@ -10,7 +10,6 @@ const userSchema = new mongoose.Schema({
     username: String,
     discriminator: String,
     avatar: String,
-    guilds: Array,
 
     // User auth
     auth: {
@@ -26,9 +25,7 @@ const guildSchema = new mongoose.Schema({
     name: String,
     icon: String,
     owner: String,
-    members: Array,
-    channels: Array,
-    roles: Array,
+    members: Array
 });
 
 const channelSchema = new mongoose.Schema({
@@ -47,7 +44,6 @@ const messageSchema = new mongoose.Schema({
     // User
     author: String,
     channel: String,
-    guild: String,
 });
 
 const roleSchema = new mongoose.Schema({
