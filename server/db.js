@@ -33,7 +33,9 @@ const channelSchema = new mongoose.Schema({
     name: String,
     type: String,
     guild: String,
-    messages: Array,
+
+    // Channel permissions
+    permissions: Array,
 });
 
 const messageSchema = new mongoose.Schema({
