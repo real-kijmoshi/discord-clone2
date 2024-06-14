@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     avatar: String,
     guilds: Array,
 
-    // User settings
+    // User auth
     auth: {
         username: String,
         password: String,
