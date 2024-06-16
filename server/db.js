@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/discord', {
+// Set strictQuery to false to prepare for the change in Mongoose 7
+mongoose.set('strictQuery', false);
+
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/discord', {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('Connected to MongoDB');
+}).catch((error) => {
+    console.error('Error connecting to MongoDB:', error);
 });
 
 const userSchema = new mongoose.Schema({
@@ -10,14 +17,13 @@ const userSchema = new mongoose.Schema({
     username: String,
     discriminator: String,
     avatar: String,
-
-    // User auth
+    emailVerified: Boolean,
     auth: {
         username: String,
         password: String,
         salt: String,
         email: String,
-    } 
+    }
 });
 
 const guildSchema = new mongoose.Schema({
@@ -31,7 +37,7 @@ const guildSchema = new mongoose.Schema({
 const channelSchema = new mongoose.Schema({
     snowflake: String,
     name: String,
-    type: String,
+    channelType: String,
     guild: String,
 
     // Channel permissions
@@ -44,7 +50,16 @@ const messageSchema = new mongoose.Schema({
     attachments: Array,
 
     // User
-    author: String,
+    author: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(v) {
+                return typeof v === 'string';
+            },
+            message: props => `${props.value} is not a valid string!`
+        }
+    },
     channel: String,
 });
 
@@ -69,4 +84,3 @@ module.exports = {
     Message,
     Role,
 };
-

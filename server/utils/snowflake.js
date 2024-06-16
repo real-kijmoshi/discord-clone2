@@ -56,6 +56,8 @@ class Worker {
 
         return { dataType, sequence, workerId, timestamp, dataTypeReadable };
     }
+
+    random = Math.floor(Math.random() * 16);
 }
 
 const worker = new Worker(process.env.WORKER_ID || 0b000)
@@ -91,6 +93,16 @@ const test = () => {
 
         uniqueIds.add(id);
     }
+
+    console.log('Internal test 2 passed for snowflake');
+
+
+    console.log("-------------------");
+    console.log("Snowflake utility is working correctly");
+    console.log("wokerId: ", worker.workerId);
+    console.log("-------------------");
 }
 
 test();
+
+module.exports = worker;
