@@ -11,6 +11,8 @@ class Worker {
     0b0010: "guild",
     0b0011: "role",
     0b0100: "message",
+    0b0101: "media",
+    
   };
 
   nextId(dataTypeReadable) {

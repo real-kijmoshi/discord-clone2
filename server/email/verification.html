@@ -55,6 +55,11 @@
         padding: 20px;
         font-size: 12px;
       }
+
+      #button-text {
+        margin: 0;
+        color: #fff;
+      }
     </style>
   </head>
   <body>
@@ -68,7 +73,9 @@
           To complete your registration, please confirm your email address by
           clicking the button below.
         </p>
-        <a id="verify" class="button" href="{{url}}">Verify Email Address</a>
+        <a id="verify" class="button" href="{{url}}">
+          <p id="button-text">Verify Email Address</p>
+        </a>
         <p>
           If you did not initiate this request, please disregard this email.
         </p>

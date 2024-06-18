@@ -30,12 +30,11 @@ async function authenticate(username, password) {
 async function register(username, password, email) {
   const salt = generateSalt();
   const hashedPassword = hashPassword(password, salt);
-  console.log(hashedPassword, password, salt);
   const user = new User({
     snowflake: snowflake.nextId("user"),
     username,
     emailVerified: false,
-    avatar: null,
+    avatar: "default.png",
     auth: {
       password: hashedPassword,
       salt,
@@ -43,7 +42,7 @@ async function register(username, password, email) {
     },
   });
   await user.save();
-  return true;
+  return user.toJSON().snowflake
 }
 
 module.exports = {

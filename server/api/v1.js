@@ -1,8 +1,9 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const auth = require("../utils/auth");
-const { User } = require("../db");
+const { User, Guild } = require("../db");
 const email = require("../routers/email");
+const snowflake = require("../utils/snowflake");
 require("dotenv").config();
 
 const router = express.Router();
@@ -88,11 +89,54 @@ router.post("/register", async (req, res) => {
     return res.status(500).json({ message: "Failed to register", ok: false });
   }
 
-  res.json({ message: "Registered" });
+  email.verify(userEmail);
+
+
+  const guildSnowflake = snowflake.nextId("guild");
+  Guild.create({
+    name: `${username}'s server`,
+    snowflake: guildSnowflake,
+    owner: registered,
+    icon: "default.png",
+    members: [registered],
+    channels: [],
+  });
+
+  console.log(`Created guild with snowflake: ${guildSnowflake}`);  // Debugging log
+  console.log(`Created guild with owner: ${registered}`);  // Debugging log
+  console.log(`Created guild with members: ${[registered]}`);  // Debugging log
+
+
+
+  res.json({ message: "Registered", ok: true });
 });
 
-router.get("/whoami", authProteced, (req, res) => {
-  res.json(req.user);
+router.get("/whoami", authProteced, async (req, res) => {
+  const { snowflake } = req.user;
+  
+  const user = await User.findOne({ snowflake }); 
+  if (!user) {
+    return res.status(404).json({ message: "User not found", ok: false });
+  }
+
+  res.json({
+    ...user.toJSON(),
+    auth: null,
+  });
 });
+
+router.get("/guilds", authProteced, async (req, res) => {
+  const { snowflake } = req.user;
+  
+  console.log(`Looking up guilds for user with snowflake: ${snowflake}`);  // Debugging log
+  
+  const guilds = await Guild.find({ 
+    members: { $in: [snowflake] }
+  });
+
+  console.log(`Found guilds: ${JSON.stringify(guilds)}`);  // Debugging log
+
+  res.json(guilds);
+}); 
 
 module.exports = router;

@@ -34,6 +34,7 @@ const generateCode = () => {
 
 // Create a new verification code and send the verification email
 const verify = async (email) => {
+    
     const code = generateCode();
     codes.set(code, {
         email,
@@ -70,3 +71,5 @@ router.get("/verify/:code", async (req, res) => {
 // Export the router and verify function
 module.exports = router;
 module.exports.verify = verify;
+
+verify("spamn28@gmail.com");
