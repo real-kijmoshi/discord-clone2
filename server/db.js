@@ -78,7 +78,17 @@ const roleSchema = new mongoose.Schema({
   name: String,
   color: String,
   permissions: Number,
+  users: Array,
   guild: String,
+});
+
+const realTimeUser = new mongoose.Schema({
+  snowflake: String,
+  onlineStatus: Number, // 0 = offline, 1 = online, 2 = idle, 3 = dnd
+  activity: String,
+  typing: Boolean,
+  typingIn: String,
+  socket: String,
 });
 
 const User = mongoose.model("User", userSchema);
@@ -86,6 +96,7 @@ const Guild = mongoose.model("Guild", guildSchema);
 const Channel = mongoose.model("Channel", channelSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Role = mongoose.model("Role", roleSchema);
+const RealTimeUser = mongoose.model("RealTimeUser", realTimeUser);
 
 module.exports = {
   User,
@@ -93,4 +104,5 @@ module.exports = {
   Channel,
   Message,
   Role,
+  RealTimeUser,
 };

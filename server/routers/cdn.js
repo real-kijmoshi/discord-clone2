@@ -9,11 +9,13 @@ fs.existsSync(__dirname + "/../cdn/icons") || fs.mkdirSync(__dirname + "/../cdn/
 
 router.get("/avatar/:id", (req, res) => {
     const { id } = req.params;
-    const path = __dirname + "/../cdn/avatars/" + id
+    const path = resolve(__dirname + "/../cdn/avatars/" + id)
 
     if (!fs.existsSync(path)) {
         return res.status(404).send("Not found");
     }
+
+    res.sendFile(path)
 });
 
 router.get("/icon/:id", (req, res) => {

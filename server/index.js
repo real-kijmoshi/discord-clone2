@@ -1,10 +1,13 @@
 const express = require("express");
-
-const app = express();
-
 const cors = require("cors");
 
 require("dotenv").config();
+
+
+const app = express();
+const server = require("http").createServer(app);
+
+require("./utils/socketServer")(server);
 
 const apiVersions = {
   v1: require("./api/v1"),
@@ -31,6 +34,6 @@ app.use("/api/:version", (req, res, next) => {
 app.use("/email", emailRouter);
 app.use("/cdn", cdnRouter);
 
-app.listen(3000, () => {
-  console.log("Server listening on port 3000");
+server.listen(process.env.PORT || 3000, () => {
+  console.log(`Server running on port ${process.env.PORT || 3000}`);
 });

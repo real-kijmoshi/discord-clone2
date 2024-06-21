@@ -8,8 +8,20 @@ import {
 } from "react-router-dom";
 
 import Home from './pages/Home';
-import Channel from './pages/Channel';
+import Layout from './components/Layout';
+import Guild from './pages/Guild';
 
+//socket
+import io from 'socket.io-client';
+
+console.log(import.meta.env.VITE_API_URL)
+const socket = io(import.meta.env.VITE_GATEWAY_URL, {
+  withCredentials: true,
+  //auth
+  auth: {
+    token: localStorage.getItem("token")
+  }
+});
 
 const router = createBrowserRouter([
   {
@@ -18,8 +30,16 @@ const router = createBrowserRouter([
   },
   {
     path: "/channels/:guildID/:channelID",
-    element: <Channel />,
+    element: (
+      <Layout />
+    )
   },
+  {
+    path: "/channels/:guildID",
+    element: (
+      <Layout children={<Guild />} />
+    )
+  }
 ]);
 
 

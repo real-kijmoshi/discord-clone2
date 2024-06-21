@@ -1,9 +1,10 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const auth = require("../utils/auth");
-const { User, Guild } = require("../db");
+const { User, Guild, Channel, Role } = require("../db");
 const email = require("../routers/email");
 const snowflake = require("../utils/snowflake");
+const Permissions = require("../utils/permissions");
 require("dotenv").config();
 
 const router = express.Router();
@@ -97,9 +98,16 @@ router.post("/register", async (req, res) => {
     name: `${username}'s server`,
     snowflake: guildSnowflake,
     owner: registered,
-    icon: "default.png",
-    members: [registered],
-    channels: [],
+    icon: null,
+    members: [registered]
+  });
+
+  Channel.create({
+    snowflake: snowflake.nextId("channel"),
+    name: "general",
+    channelType: "text",
+    guild: guildSnowflake,
+    permissions: []
   });
 
   console.log(`Created guild with snowflake: ${guildSnowflake}`);  // Debugging log
@@ -128,15 +136,54 @@ router.get("/whoami", authProteced, async (req, res) => {
 router.get("/guilds", authProteced, async (req, res) => {
   const { snowflake } = req.user;
   
-  console.log(`Looking up guilds for user with snowflake: ${snowflake}`);  // Debugging log
-  
   const guilds = await Guild.find({ 
     members: { $in: [snowflake] }
   });
 
-  console.log(`Found guilds: ${JSON.stringify(guilds)}`);  // Debugging log
-
   res.json(guilds);
 }); 
+
+router.get("/guilds/:id", authProteced, async (req, res) => {
+  const { id } = req.params;
+  const { snowflake } = req.user;
+
+  // Find the guild where the user is a member
+  const guild = await Guild.findOne({
+    snowflake: id,
+    members: { $in: [snowflake] }
+  });
+
+  if (!guild) {
+    return res.status(404).json({ message: "Guild not found", ok: false });
+  }
+
+  // Find all channels in the guild
+  const channels = await Channel.find({ guild: id });
+
+  // Find roles the user has in the guild
+  const userRoles = await Role.find({ guild: id, users: { $in: [snowflake] } });
+
+  // Aggregate user permissions from all roles
+  const userPermissions = userRoles.reduce((acc, role) => {
+    acc |= role.permissions;
+    return acc;
+  }, 0);
+
+  // Filter channels based on permissions or if the user is the guild owner
+  const allowedChannels = channels.filter(channel => {
+    if (guild.owner == snowflake || !channel.permissions) {
+      return true;
+    }
+    return Permissions.hasPermission(userPermissions, Permissions.PERMISSIONS.CHANNEL.VIEW_CHANNEL);
+  });
+
+  const guildInfo = {
+    ...guild.toJSON(),
+    channels: allowedChannels,
+  };
+
+  res.json(guildInfo);
+});
+
 
 module.exports = router;
