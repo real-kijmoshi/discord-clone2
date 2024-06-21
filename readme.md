@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/logo.svg" width="200" height="250" alt="Discord Clone Logo" style="display: block; margin-bottom: 20px;">
+  <img src="/logo.svg" width="200" height="230" alt="Discord Clone Logo" style="display: block; margin-bottom: 20px;">
 </p>
 
 <h1 align="center">Discord Clone</h1>
