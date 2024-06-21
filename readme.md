@@ -27,18 +27,18 @@
 - **React Native** for a mobile app (possibly)
 
 ## Features
-- [x] Messages
-- [x] Direct messages
-- [x] Friend requests
-- [x] Friend list
-- [x] Groups
-- [x] User profiles (with more customization)
-- [x] Permissions
-- [x] Guild management
-- [x] User settings
-- [x] Voice channels
-- [x] Video channels
-- [x] Notifications
+- [-] Messages
+- [-] Direct messages
+- [-] Friend requests
+- [-] Friend list
+- [-] Groups
+- [-] User profiles (with more customization)
+- [-] Permissions
+- [-] Guild management
+- [-] User settings
+- [-] Voice channels
+- [-] Video channels
+- [-] Notifications
 
 ## How to Run
 
