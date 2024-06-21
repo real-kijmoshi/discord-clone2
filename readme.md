@@ -26,7 +26,7 @@
 - **Firebase** for WebRTC signaling
 - **React Native** for a mobile app (possibly)
 
-## Features
+## To-Do
 - [ ] Messages
 - [ ] Direct messages
 - [ ] Friend requests
