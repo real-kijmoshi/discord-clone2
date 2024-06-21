@@ -1,4 +1,4 @@
-<img src="/logo.svg" width="200" height="200" align="right" alt="Discord clone logo" />
+<img src="/logo.svg" width="200" height="200" alt="Discord clone logo" />
 
 # Discord clone
 I was bored and searched for discord clones on github and i couldn't find any good clones so i decided to make my own discord clone. 
