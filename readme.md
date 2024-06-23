@@ -27,7 +27,9 @@
 - **React Native** for a mobile app (possibly)
 
 ## Features
-- [ ] Messages
+- [x] Messages
+- [ ] Message context menu
+- [ ] Message attachments
 - [ ] Direct messages
 - [ ] Friend requests
 - [ ] Friend list

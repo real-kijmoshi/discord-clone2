@@ -34,7 +34,7 @@ function ChannelsSection({ guildId, redirect}) {
     }
 
   return (
-    <section className="flex flex-col bg-gray-700 text-white p-1 w-64">
+    <section className="flex flex-col bg-gray-700 text-white p-1 w-64 h-full">
         <Link to={`/guild/${guildId}`} className="flex items-center p-3 hover:bg-gray-600 rounded-lg cursor-pointer transition">
             {
                 guildInfo.icon == null ? 

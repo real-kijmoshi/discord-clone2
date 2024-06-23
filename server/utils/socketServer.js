@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
-const { RealTimeUser: RealTimeUserModel } = require("../db");
+const { RealTimeUser: RealTimeUserModel, Channel } = require("../db");
+const { EventEmitter } = require("events");
+
+const eventEmitter = new EventEmitter();
 
 module.exports = server => {
     const io = require("socket.io")(server, {
@@ -46,6 +49,17 @@ module.exports = server => {
         
         await realTimeUser.save();
 
+        socket.on("/listen", (channelId) => {
+            // TODO check if user has permission to listen to this channel
+
+
+            //exit other channels
+            socket.leaveAll();
+
+            //join the channel
+            socket.join(channelId);
+        });
+
         socket.on("disconnect", async () => {
             const user = socket.user;
             const realTimeUser = await RealTimeUserModel.findOne({ snowflake: user.snowflake });
@@ -56,5 +70,18 @@ module.exports = server => {
         });
     });
 
+    eventEmitter.on("message", async (message) => {
+        const channel = await Channel.findOne({ snowflake: message.channel });
+        if (!channel) return;
+
+        //serialiaze message.snoflake to string
+        message.snowflake = message.snowflake.toString();
+        
+        io.to(channel.snowflake).emit("message", message);
+    });
+
     return io;
 };
+
+
+module.exports.eventEmitter = eventEmitter;

@@ -4,18 +4,17 @@ require("dotenv").config();
 // Set strictQuery to false to prepare for the change in Mongoose 7
 mongoose.set("strictQuery", false);
 
+const dbURI = process.env.MONGO_URI || "mongodb://localhost:27017/discord";
+
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://localhost:27017/discord", {
+  .connect(dbURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
     console.log("-------------------");
     console.log("Connected to MongoDB");
-    console.log(
-      "Database url: " + process.env.MONGO_URI ||
-        "mongodb://localhost:27017/discord"
-    );
+    console.log(`Database url: ${dbURI}`);
     console.log("-------------------");
   })
   .catch((error) => {
@@ -23,70 +22,59 @@ mongoose
   });
 
 const userSchema = new mongoose.Schema({
-  snowflake: String,
-  username: String,
-  discriminator: String,
+  snowflake: { type: String, required: true },
+  username: { type: String, required: true },
   avatar: String,
-  emailVerified: Boolean,
+  emailVerified: { type: Boolean, default: false },
   auth: {
-    username: String,
-    password: String,
-    salt: String,
-    email: String,
+    password: { type: String, required: true },
+    salt: { type: String, required: true },
+    email: { type: String, required: true },
   },
 });
 
 const guildSchema = new mongoose.Schema({
-  snowflake: String,
-  name: String,
+  snowflake: { type: String, required: true },
+  name: { type: String, required: true },
   icon: String,
-  owner: String,
-  members: Array,
+  owner: { type: String, required: true },
+  members: { type: [String], default: [] },
 });
 
 const channelSchema = new mongoose.Schema({
-  snowflake: String,
-  name: String,
-  channelType: String,
-  guild: String,
-
-  // Channel permissions
-  permissions: Array,
+  snowflake: { type: String, required: true },
+  name: { type: String, required: true },
+  channelType: { type: String, required: true },
+  guild: { type: String, required: true },
+  permissions: { type: [Number], default: [] }, // Channel permissions
 });
 
 const messageSchema = new mongoose.Schema({
-  snowflake: String,
-  content: String,
-  attachments: Array,
-
-  // User
-  author: {
-    type: String,
+  snowflake: { type: String, required: true },
+  content: { type: String, required: true },
+  attachments: { type: [String], default: [] },
+  author: { 
+    type: String, 
     required: true,
-    validate: {
-      validator: function (v) {
-        return typeof v === "string";
-      },
-      message: (props) => `${props.value} is not a valid string!`,
-    },
+    ref: "User",
   },
-  channel: String,
+  channel: { type: String, required: true },
 });
 
 const roleSchema = new mongoose.Schema({
-  snowflake: String,
-  name: String,
+  snowflake: { type: String, required: true },
+  name: { type: String, required: true },
   color: String,
-  permissions: Number,
-  users: Array,
-  guild: String,
+  permissions: { type: [Number], required: true }, // Changed to an array of numbers
+  users: { type: [String], default: [] },
+  guild: { type: String, required: true },
 });
 
-const realTimeUser = new mongoose.Schema({
-  snowflake: String,
-  onlineStatus: Number, // 0 = offline, 1 = online, 2 = idle, 3 = dnd
+const realTimeUserSchema = new mongoose.Schema({
+  snowflake: { type: String, required: true },
+  onlineStatus: { type: Number, default: 0 }, // 0 = offline, 1 = online, 2 = idle, 3 = dnd
   activity: String,
-  typing: Boolean,
+  typing: { type: Boolean, default: false },
   typingIn: String,
   socket: String,
 });
@@ -96,7 +84,7 @@ const Guild = mongoose.model("Guild", guildSchema);
 const Channel = mongoose.model("Channel", channelSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Role = mongoose.model("Role", roleSchema);
-const RealTimeUser = mongoose.model("RealTimeUser", realTimeUser);
+const RealTimeUser = mongoose.model("RealTimeUser", realTimeUserSchema);
 
 module.exports = {
   User,

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 const ChannelItem = ({ channel }) => {
-
     return (
         <Link className="cursor-pointer transition hover:bg-gray-600 p-0" to={`/channels/${channel.guild}/${channel.snowflake}`}>
             <hr className="mb-2" />

@@ -19,7 +19,6 @@ const Home = () => {
     }
 
     if (!user) {
-        // While the redirection happens, we can return null or a loading indicator
         return null;
     }
 

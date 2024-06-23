@@ -1,3 +1,5 @@
+// 42 bits for time, 8 bits for worker id, 10 bits for sequence, 4 bits for data type
+
 class Worker {
   constructor(workerId) {
     this.workerId = parseInt(workerId, 10);

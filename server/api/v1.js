@@ -1,15 +1,17 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const auth = require("../utils/auth");
-const { User, Guild, Channel, Role } = require("../db");
+const { User, Guild, Channel, Role, Message } = require("../db");
 const email = require("../routers/email");
 const snowflake = require("../utils/snowflake");
 const Permissions = require("../utils/permissions");
+const creator = require("../utils/creator");
+const { eventEmitter } = require("../utils/socketServer");
 require("dotenv").config();
 
 const router = express.Router();
 
-
+// Middleware for token verification
 router.use((req, res, next) => {
   const token = req.headers.authorization;
   if (!token) {
@@ -26,12 +28,8 @@ router.use((req, res, next) => {
   });
 });
 
-
-// _____________________________
-// Auth protected routes
-// _____________________________
-
-const authProteced = (req, res, next) => {
+// Middleware for authentication
+const authProtected = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized", ok: false });
   }
@@ -49,9 +47,7 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials", ok: false });
   }
 
-  const user = await User.findOne({
-    username,
-  });
+  const user = await User.findOne({ username });
 
   const token = jwt.sign(
     {
@@ -75,15 +71,11 @@ router.post("/register", async (req, res) => {
     $or: [{ username }, { email: userEmail }],
   });
 
-  if (user?.auth.email == userEmail) {
+  if (user?.auth.email === userEmail) {
     return res.status(400).json({ message: "Email already in use", ok: false });
   } else if (user) {
-    return res
-      .status(400)
-      .json({ message: "Username already in use", ok: false });
+    return res.status(400).json({ message: "Username already in use", ok: false });
   }
-
-  
 
   const registered = await auth.register(username, password, userEmail);
   if (!registered) {
@@ -91,38 +83,15 @@ router.post("/register", async (req, res) => {
   }
 
   email.verify(userEmail);
-
-
-  const guildSnowflake = snowflake.nextId("guild");
-  Guild.create({
-    name: `${username}'s server`,
-    snowflake: guildSnowflake,
-    owner: registered,
-    icon: null,
-    members: [registered]
-  });
-
-  Channel.create({
-    snowflake: snowflake.nextId("channel"),
-    name: "general",
-    channelType: "text",
-    guild: guildSnowflake,
-    permissions: []
-  });
-
-  console.log(`Created guild with snowflake: ${guildSnowflake}`);  // Debugging log
-  console.log(`Created guild with owner: ${registered}`);  // Debugging log
-  console.log(`Created guild with members: ${[registered]}`);  // Debugging log
-
-
+  creator.createGuild(registered, username);
 
   res.json({ message: "Registered", ok: true });
 });
 
-router.get("/whoami", authProteced, async (req, res) => {
+router.get("/whoami", authProtected, async (req, res) => {
   const { snowflake } = req.user;
-  
-  const user = await User.findOne({ snowflake }); 
+
+  const user = await User.findOne({ snowflake });
   if (!user) {
     return res.status(404).json({ message: "User not found", ok: false });
   }
@@ -133,21 +102,20 @@ router.get("/whoami", authProteced, async (req, res) => {
   });
 });
 
-router.get("/guilds", authProteced, async (req, res) => {
+router.get("/guilds", authProtected, async (req, res) => {
   const { snowflake } = req.user;
-  
-  const guilds = await Guild.find({ 
+
+  const guilds = await Guild.find({
     members: { $in: [snowflake] }
   });
 
   res.json(guilds);
-}); 
+});
 
-router.get("/guilds/:id", authProteced, async (req, res) => {
+router.get("/guilds/:id", authProtected, async (req, res) => {
   const { id } = req.params;
   const { snowflake } = req.user;
 
-  // Find the guild where the user is a member
   const guild = await Guild.findOne({
     snowflake: id,
     members: { $in: [snowflake] }
@@ -157,21 +125,17 @@ router.get("/guilds/:id", authProteced, async (req, res) => {
     return res.status(404).json({ message: "Guild not found", ok: false });
   }
 
-  // Find all channels in the guild
   const channels = await Channel.find({ guild: id });
 
-  // Find roles the user has in the guild
   const userRoles = await Role.find({ guild: id, users: { $in: [snowflake] } });
 
-  // Aggregate user permissions from all roles
   const userPermissions = userRoles.reduce((acc, role) => {
     acc |= role.permissions;
     return acc;
   }, 0);
 
-  // Filter channels based on permissions or if the user is the guild owner
   const allowedChannels = channels.filter(channel => {
-    if (guild.owner == snowflake || !channel.permissions) {
+    if (guild.owner === snowflake || !channel.permissions) {
       return true;
     }
     return Permissions.hasPermission(userPermissions, Permissions.PERMISSIONS.CHANNEL.VIEW_CHANNEL);
@@ -185,5 +149,65 @@ router.get("/guilds/:id", authProteced, async (req, res) => {
   res.json(guildInfo);
 });
 
+router.get("/channels/:id/messages", authProtected, async (req, res) => {
+  const { id } = req.params;
+  const newestSnowflake = req.query.newestSnowflake || null;
+  const limit = parseInt(req.query.limit, 10) || 50;
+
+  const channel = await Channel.findOne({ snowflake: id });
+  if (!channel) {
+    return res.status(404).json({ message: "Channel not found", ok: false });
+  }
+
+  const messages = await Message.find({
+    channel: id,
+    ...(newestSnowflake ? { snowflake: { $lt: newestSnowflake } } : {}),
+  })
+  .sort({ snowflake: -1 })
+  .limit(limit);
+
+  res.json(messages);
+});
+
+router.post("/channels/:id/messages", authProtected, async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  const channel = await Channel.findOne({ snowflake: id });
+  if (!channel) {
+    return res.status(404).json({ message: "Channel not found", ok: false });
+  }
+
+  if (!content) {
+    return res.status(400).json({ message: "Missing content", ok: false });
+  }
+
+  const message = {
+    snowflake: snowflake.nextId("message"),
+    content,
+    author: req.user.snowflake,
+    channel: id,
+  };
+
+  await Message.create(message);
+
+  eventEmitter.emit("message", message);
+
+  res.json({ message: "Message sent", ok: true });
+});
+
+router.get("/users/:id", authProtected, async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findOne({ snowflake: id });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found", ok: false });
+  }
+
+  res.json({
+    ...user.toJSON(),
+    auth: null,
+  });
+});
 
 module.exports = router;

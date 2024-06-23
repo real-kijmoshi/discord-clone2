@@ -13,8 +13,8 @@ import Guild from './pages/Guild';
 
 //socket
 import io from 'socket.io-client';
+import Channel from './pages/Channel';
 
-console.log(import.meta.env.VITE_API_URL)
 const socket = io(import.meta.env.VITE_GATEWAY_URL, {
   withCredentials: true,
   //auth
@@ -22,7 +22,6 @@ const socket = io(import.meta.env.VITE_GATEWAY_URL, {
     token: localStorage.getItem("token")
   }
 });
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -31,7 +30,7 @@ const router = createBrowserRouter([
   {
     path: "/channels/:guildID/:channelID",
     element: (
-      <Layout />
+      <Layout children={<Channel socket={socket} />} />
     )
   },
   {

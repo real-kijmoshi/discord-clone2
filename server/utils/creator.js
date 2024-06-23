@@ -8,9 +8,11 @@ const {
 const Permissions = require('./permissions');
 const snowflake = require('./snowflake');
 
-const createGuild = async (owner) => {
+const createGuild = async (owner, username) => {
+    console.log(owner);
     const guildID = snowflake.nextId("guild");
     const guild = new Guild({
+        name: `${username}'s server`,
         snowflake: guildID,
         owner,
         members: [owner]
@@ -21,12 +23,14 @@ const createGuild = async (owner) => {
     const defaultChannel = new Channel({
         guild: guildID,
         name: "general",
-        type: "text"
+        snowflake: snowflake.nextId("channel"),
+        channelType: "text",
     });
 
     await defaultChannel.save();
 
     const everyoneRole = new Role({
+        snowflake: snowflake.nextId("role"),
         guild: guildID,
         name: "@everyone",
         permissions: [
