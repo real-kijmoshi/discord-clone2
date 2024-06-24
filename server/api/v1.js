@@ -183,7 +183,7 @@ router.post("/channels/:id/messages", authProtected, async (req, res) => {
   }
 
   const message = {
-    snowflake: snowflake.nextId("message"),
+    snowflake: snowflake.nextId("message").toString(),
     content,
     author: req.user.snowflake,
     channel: id,
@@ -192,8 +192,7 @@ router.post("/channels/:id/messages", authProtected, async (req, res) => {
   await Message.create(message);
 
   eventEmitter.emit("message", message);
-
-  res.json({ message: "Message sent", ok: true });
+  res.json(message);
 });
 
 router.get("/users/:id", authProtected, async (req, res) => {

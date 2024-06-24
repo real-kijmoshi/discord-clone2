@@ -73,9 +73,6 @@ module.exports = server => {
     eventEmitter.on("message", async (message) => {
         const channel = await Channel.findOne({ snowflake: message.channel });
         if (!channel) return;
-
-        //serialiaze message.snoflake to string
-        message.snowflake = message.snowflake.toString();
         
         io.to(channel.snowflake).emit("message", message);
     });

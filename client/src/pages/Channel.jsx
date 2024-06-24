@@ -20,13 +20,13 @@ function NormalChannel({ guildId, channelId, socket }) {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const bottomRef = useRef(null);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (bottomRef.current.getBoundingClientRect().top < window.innerHeight) {
       setShowScrollToBottom(false);
     } else {
       setShowScrollToBottom(true);
     }
-  };
+  }, []);
 
   const sendMessage = useCallback(
     (e) => {
@@ -61,7 +61,7 @@ function NormalChannel({ guildId, channelId, socket }) {
       const response = await axios.get(`/channels/${channelId}/messages`, {
         headers: { authorization: localStorage.getItem("token") },
         params: {
-          limit: 50,
+          limit: 15,
           lastSnowflake: messages.length > 0 ? messages[0].snowflake : null,
         },
       });
@@ -89,7 +89,6 @@ function NormalChannel({ guildId, channelId, socket }) {
         }
         return [...prevMessages, message];
       });
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     };
 
     socket.emit("/listen", channelId);
@@ -101,12 +100,26 @@ function NormalChannel({ guildId, channelId, socket }) {
       socket.off("message", handleMessage);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [channelId, fetchMessages, socket]);
+  }, [channelId, fetchMessages, handleScroll, socket]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100); // Adjust delay as needed
+
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   const handleRightClick = (e) => {
     e.preventDefault();
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
     setShowContextMenu(true);
+  };
+
+  const handleCloseContextMenu = () => {
+    setShowContextMenu(false);
   };
 
   return (
@@ -116,10 +129,11 @@ function NormalChannel({ guildId, channelId, socket }) {
         <div
           className="flex flex-col w-full h-full bg-gray-600 p-2 overflow-y-auto"
           onScroll={handleScroll}
+          onClick={handleCloseContextMenu}
         >
           {messages.map((message) => (
             <div key={message.snowflake} className="flex flex-row w-full">
-              <Message message={message} />
+              <Message message={message} onRightClick={handleRightClick} />
             </div>
           ))}
           <div ref={bottomRef} />
@@ -155,6 +169,17 @@ function NormalChannel({ guildId, channelId, socket }) {
             alt="scroll to bottom"
           />
         </button>
+      )}
+
+      {showContextMenu && (
+        <div
+          className="fixed bg-gray-800 p-2 rounded-lg"
+          style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
+          onClick={handleCloseContextMenu}
+        >
+          <button className="block text-white w-full text-left p-1">Copy</button>
+          <button className="block text-white w-full text-left p-1">Report</button>
+        </div>
       )}
     </div>
   );
