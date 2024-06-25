@@ -67,6 +67,8 @@ const joinGuild = async (guildID, user) => {
     return true;
 }
 
+
 module.exports = {
-    createGuild
+    createGuild,
+    joinGuild
 };

@@ -1,7 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const auth = require("../utils/auth");
-const { User, Guild, Channel, Role, Message } = require("../db");
+const { User, Guild, Channel, Role, Message, Invite } = require("../db");
 const email = require("../routers/email");
 const snowflake = require("../utils/snowflake");
 const Permissions = require("../utils/permissions");
@@ -137,26 +137,21 @@ router.get("/guilds/:id", authProtected, async (req, res) => {
 
   const channels = await Channel.find({ guild: id });
 
-  const userRoles = await Role.find({ guild: id, users: { $in: [snowflake] } });
-
-  const userPermissions = userRoles.reduce((acc, role) => {
-    acc |= role.permissions;
-    return acc;
-  }, 0);
-
-  const allowedChannels = channels.filter(channel => {
-    if (guild.owner === snowflake || !channel.permissions) {
-      return true;
-    }
-    return Permissions.hasPermission(userPermissions, Permissions.PERMISSIONS.CHANNEL.VIEW_CHANNEL);
+  const userPermissions = await Role.findOne({
+    guild: id,
+    users: { $in: [snowflake] }
   });
 
-  const guildInfo = {
+  const allowedChannels = channels.filter(channel => {
+    const canView = guild.owner == snowflake || userPermissions.permissions.includes(Permissions.PERMISSIONS.CHANNEL.VIEW_CHANNEL);
+    return canView;
+    //TO DO: IMPLEMENT PERMISSIONS CHECK FOR CHANNELS OVERRODE BY ROLES
+  });
+
+  res.json({
     ...guild.toJSON(),
     channels: allowedChannels,
-  };
-
-  res.json(guildInfo);
+  });
 });
 
 router.get("/channels/:id/messages", authProtected, async (req, res) => {
@@ -217,6 +212,62 @@ router.get("/users/:id", authProtected, async (req, res) => {
     ...user.toJSON(),
     auth: null,
   });
+}); 
+
+router.post("/guilds/:id/invites", authProtected, async (req, res) => {
+  const { id } = req.params;
+  const guild = await Guild.findOne({
+    snowflake: id,
+    members: { $in: [req.user.snowflake] }
+  })
+
+  console.log(guild);
+
+  if (!guild) {
+    return res.status(404).json({ message: "Guild not found", ok: false });
+  }
+
+  let code;
+
+  do {
+    code = Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
+  } while (await Invite.findOne({ code }));
+
+  const invite = new Invite({
+    code,
+    guild: req.params.id,
+  });
+
+  await invite.save();
+
+  res.json({ code });
 });
+
+router.post("/invites/:code", authProtected, async (req, res) => {
+  const { code } = req.params;
+  const invite = await Invite.findOne({
+    code,
+  });
+
+  if (!invite) {
+    return res.status(404).json({ message: "Invite not found", ok: false });
+  }
+
+  const guild = await Guild.findOne({ snowflake: invite.guild });
+
+  if (!guild) {
+    return res.status(404).json({ message: "Guild not found", ok: false });
+  }
+
+  //check if user is already in guild
+  if(guild.members.includes(req.user.snowflake)) {
+    return res.json({ message: "Already in guild", ok: true, guild: guild.snowflake });
+  }
+
+  creator.joinGuild(guild.snowflake, req.user.snowflake);
+
+  res.json({ message: "Joined guild", ok: true, guild: guild.snowflake });
+});
+
 
 module.exports = router;

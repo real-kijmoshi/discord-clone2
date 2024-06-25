@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const creator = require("./utils/creator");
 
 require("dotenv").config();
 
@@ -33,6 +34,7 @@ app.use("/api/:version", (req, res, next) => {
 
 app.use("/email", emailRouter);
 app.use("/cdn", cdnRouter);
+
 
 server.listen(process.env.PORT || 3000, () => {
   console.log(`Server running on port ${process.env.PORT || 3000}`);

@@ -12,6 +12,7 @@ import Channel from './pages/Channel';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { SocketProvider } from './utils/socketContext'
+import GuildInfo from './pages/GuildInfo';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
         <Guild />
       </Layout>
     )
+  },
+  {
+    path: "/guild/:guildID",
+    element: <GuildInfo />,
   },
   {
     path: "/auth",

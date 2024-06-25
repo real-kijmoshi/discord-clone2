@@ -28,6 +28,7 @@
 
 ## Features
 - [x] Messages
+- [x] Joining guilds
 - [ ] Message context menu
 - [ ] Message attachments
 - [ ] Direct messages

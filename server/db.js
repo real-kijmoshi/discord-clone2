@@ -79,12 +79,18 @@ const realTimeUserSchema = new mongoose.Schema({
   socket: String,
 });
 
+const inviteSchema = new mongoose.Schema({
+  guild: { type: String, required: true },
+  code: { type: String, required: true },
+});
+
 const User = mongoose.model("User", userSchema);
 const Guild = mongoose.model("Guild", guildSchema);
 const Channel = mongoose.model("Channel", channelSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Role = mongoose.model("Role", roleSchema);
 const RealTimeUser = mongoose.model("RealTimeUser", realTimeUserSchema);
+const Invite = mongoose.model("Invite", inviteSchema);
 
 module.exports = {
   User,
@@ -93,4 +99,5 @@ module.exports = {
   Message,
   Role,
   RealTimeUser,
+  Invite,
 };
