@@ -7,6 +7,7 @@ const snowflake = require("../utils/snowflake");
 const Permissions = require("../utils/permissions");
 const creator = require("../utils/creator");
 const { eventEmitter } = require("../utils/socketServer");
+const trustedEmails = require("../utils/trustedEmails.json");
 require("dotenv").config();
 
 const router = express.Router();
@@ -61,10 +62,19 @@ router.post("/login", async (req, res) => {
   res.json({ token });
 });
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 router.post("/register", async (req, res) => {
   const { username, password, email: userEmail } = req.body;
   if (!username || !password || !userEmail) {
     return res.status(400).json({ message: "Missing fields", ok: false });
+  }
+
+  if(!trustedEmails.some(email => userEmail.endsWith(email))) {
+    return res.status(400).json({ message: "Invalid email domain", ok: false });
+  }
+  
+  if (!EMAIL_REGEX.test(userEmail)) {
+    return res.status(400).json({ message: "Invalid email", ok: false });
   }
 
   const user = await User.findOne({

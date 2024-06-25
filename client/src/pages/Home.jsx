@@ -14,23 +14,24 @@ const Home = () => {
         }
     }, [loading, user, navigate]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!user) {
-        return null;
-    }
 
     return (
-        <div>
-            <h1>
-                Disocrd-clone
-            </h1>
+        <>
+            <nav className="flex justify-end bg-gray-700 p-4 text-white space-x-4 items-center">
+                <a href="/auth/login" className="bg-blue-500 px-4 py-2 text-white rounded">Login</a>
+                <a href="/auth/register" className="bg-blue-500 px-4 py-2 text-white rounded">Register</a>
 
-            hi there traveler,
-            if you are new here, you can sign up or login to continue
-        </div>
+            </nav>
+            <div className="bg-gray-800 h-screen flex flex-col justify-center items-center text-white">
+                <img src="/logo.svg" alt="logo" className="w-32 h-36" />
+                <h1 className="text-4xl font-bold">
+                    Disocrd-clone
+                </h1>
+
+                hi there traveler,
+                if you are new here, you can sign up or login to continue
+            </div>
+        </>
     );
 };
 

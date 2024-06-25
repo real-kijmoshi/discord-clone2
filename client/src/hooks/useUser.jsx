@@ -11,6 +11,12 @@ export default function useUser(token) {
         if (!token) {
             setUser(null);
             setLoading(false);
+
+            
+            if(/channels/.test(window.location.pathname)) {
+                window.location.href = "/";
+            }
+            
             return;
         }
         
@@ -22,9 +28,9 @@ export default function useUser(token) {
                     },
                 });
                 setUser(response.data);
-                console.log(response.data);
             } catch (error) {
                 setUser(null);
+                console.log(error)
             } finally {
                 setLoading(false);
             }

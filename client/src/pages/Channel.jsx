@@ -3,6 +3,7 @@ import ChannelsSection from "../components/ChannelsSection";
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "../utils/axios";
 import Message from "../components/Message";
+import { useSocket } from "../utils/socketContext";
 
 function AtMeChannel() {
   return (
@@ -12,13 +13,14 @@ function AtMeChannel() {
   );
 }
 
-function NormalChannel({ guildId, channelId, socket }) {
+function NormalChannel({ guildId, channelId }) {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState(null);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const bottomRef = useRef(null);
+  const socket = useSocket()
 
   const handleScroll = useCallback(() => {
     if (bottomRef.current.getBoundingClientRect().top < window.innerHeight) {
@@ -185,14 +187,14 @@ function NormalChannel({ guildId, channelId, socket }) {
   );
 }
 
-function Channel({ socket }) {
+function Channel() {
   const { guildID, channelID } = useParams();
 
   if (guildID === "@me") {
     return <AtMeChannel />;
   }
 
-  return <NormalChannel guildId={guildID} channelId={channelID} socket={socket} />;
+  return <NormalChannel guildId={guildID} channelId={channelID} />;
 }
 
 export default Channel;

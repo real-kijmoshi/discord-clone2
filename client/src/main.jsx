@@ -1,27 +1,18 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './index.css'
-
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
 import {
   createBrowserRouter,
   RouterProvider
 } from "react-router-dom";
-
 import Home from './pages/Home';
 import Layout from './components/Layout';
 import Guild from './pages/Guild';
-
-//socket
-import io from 'socket.io-client';
 import Channel from './pages/Channel';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import { SocketProvider } from './utils/socketContext'
 
-const socket = io(import.meta.env.VITE_GATEWAY_URL, {
-  withCredentials: true,
-  //auth
-  auth: {
-    token: localStorage.getItem("token")
-  }
-});
 const router = createBrowserRouter([
   {
     path: "/",
@@ -30,21 +21,38 @@ const router = createBrowserRouter([
   {
     path: "/channels/:guildID/:channelID",
     element: (
-      <Layout children={<Channel socket={socket} />} />
+      <Layout>
+        <Channel />
+      </Layout>
     )
   },
   {
     path: "/channels/:guildID",
     element: (
-      <Layout children={<Guild />} />
+      <Layout>
+        <Guild />
+      </Layout>
     )
+  },
+  {
+    path: "/auth",
+    children: [
+      {
+        path: "/auth/login",
+        element: <Login />,
+      },
+      {
+        path: "/auth/register",
+        element: <Register />,
+      }
+    ]
   }
 ]);
 
-
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <SocketProvider>
+      <RouterProvider router={router} />
+    </SocketProvider>
   </React.StrictMode>,
 );
