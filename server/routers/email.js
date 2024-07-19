@@ -71,5 +71,3 @@ router.get("/verify/:code", async (req, res) => {
 // Export the router and verify function
 module.exports = router;
 module.exports.verify = verify;
-
-verify("spamn28@gmail.com");

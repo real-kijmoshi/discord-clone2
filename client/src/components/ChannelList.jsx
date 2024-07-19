@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
+// eslint-disable-next-line react/prop-types
 const ChannelItem = ({ channel }) => {
     return (
         <Link className="cursor-pointer transition hover:bg-gray-600 p-0" to={`/channels/${channel.guild}/${channel.snowflake}`}>
@@ -14,6 +16,14 @@ const ChannelItem = ({ channel }) => {
         </Link>
     );
 }
+ChannelItem.propTypes = {
+    channel: PropTypes.shape({
+        snowflake: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        guild: PropTypes.string.isRequired,
+        channelType: PropTypes.string.isRequired,
+    }).isRequired,
+};
 
 
 function ChannelList({ channels }) {
@@ -27,5 +37,8 @@ function ChannelList({ channels }) {
         </div>
     );
 }
+ChannelList.propTypes = {
+    channels: PropTypes.array.isRequired,
+};
 
 export default ChannelList;

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "../utils/axios";
 import Message from "../components/Message";
 import { useSocket } from "../utils/socketContext";
+import PropTypes from "prop-types";
 
 function AtMeChannel() {
   return (
@@ -21,6 +22,7 @@ function NormalChannel({ guildId, channelId }) {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const bottomRef = useRef(null);
   const socket = useSocket()
+  const loading = useRef(false);
 
   const handleScroll = useCallback(() => {
     if (bottomRef.current.getBoundingClientRect().top < window.innerHeight) {
@@ -59,7 +61,9 @@ function NormalChannel({ guildId, channelId }) {
   );
 
   const fetchMessages = useCallback(async () => {
+    let timer = null;
     try {
+      loading.current = true;
       const response = await axios.get(`/channels/${channelId}/messages`, {
         headers: { authorization: localStorage.getItem("token") },
         params: {
@@ -76,10 +80,17 @@ function NormalChannel({ guildId, channelId }) {
         );
         return [...filteredMessages, ...prevMessages];
       });
+      loading.current = false;
+      setError(null);
     } catch (error) {
-      setError(error.response?.data?.message || "Error fetching messages");
+      setError(error.response?.data?.message || "Error while fetching messages");
+      loading.current = false;
+      timer = setTimeout(fetchMessages, 1000);
+      console.log("Retrying to fetch messages in 1 second");
     }
-  }, [channelId]);
+
+    return () => clearTimeout(timer);
+  }, [channelId, messages]);
 
   useEffect(() => {
     fetchMessages();
@@ -93,13 +104,17 @@ function NormalChannel({ guildId, channelId }) {
       });
     };
 
-    socket.emit("/listen", channelId);
-    socket.on("message", handleMessage);
+    if(socket !== null) {      
+      socket.emit("/listen", channelId);
+      socket.on("message", handleMessage);
+    }
 
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      socket.off("message", handleMessage);
+      if(socket !== null) {
+        socket.off("message", handleMessage);
+      }
       window.removeEventListener("scroll", handleScroll);
     };
   }, [channelId, fetchMessages, handleScroll, socket]);
@@ -138,6 +153,23 @@ function NormalChannel({ guildId, channelId }) {
               <Message message={message} onRightClick={handleRightClick} />
             </div>
           ))}
+
+          {messages.length === 0 && (
+            Array.from({ length: 15 }, (_, i) => (
+              <div key={i} className="flex flex-row w-full">
+                <div className="flex flex-row w-full items-center p-2 bg-gray-800 rounded-lg mb-2 m-2">
+                  <div className="w-12 h-12 rounded-full bg-gray-700"></div>
+                  <div className="flex flex-col ml-2">
+                    <div>
+                      <span className="font-bold bg-gray-700 w-24 h-4 rounded-lg"></span>
+                      <span className="text-gray-400 ml-2 bg-gray-700 w-16 h-4 rounded-lg mt-2"></span>
+                    </div>
+                    <span className="bg-gray-700 w-64 h-4 rounded-lg mt-2"></span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
           <div ref={bottomRef} />
         </div>
         <form
@@ -186,6 +218,10 @@ function NormalChannel({ guildId, channelId }) {
     </div>
   );
 }
+NormalChannel.propTypes = {
+  guildId: PropTypes.string.isRequired,
+  channelId: PropTypes.string.isRequired,
+};
 
 function Channel() {
   const { guildID, channelID } = useParams();

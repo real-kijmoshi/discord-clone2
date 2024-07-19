@@ -13,11 +13,15 @@ module.exports = server => {
         }
     });
 
-    io.use((socket, next) => {
+    io.of("/gateway").use((socket, next) => {
         const token = socket.handshake.auth.token;
+
+        console.log(token);
+
         if (!token) {
             return next(new Error("Authentication error"));
         }
+
 
         jwt.verify(token, process.env.JWT, (err, decoded) => {
             if (err) {
@@ -29,9 +33,14 @@ module.exports = server => {
         });
     });
 
-    io.on("connection", async (socket) => {
+    io.of("/gateway").on("connection", async (socket) => {
         const user = socket.user;
 
+        if(!user) {
+            socket.emit("error", "Authentication error");
+            socket.disconnect();
+            return;
+        }
         let realTimeUser = await RealTimeUserModel.findOne({ snowflake: user.snowflake });
         if (!realTimeUser) {
             realTimeUser = new RealTimeUserModel({
@@ -60,6 +69,16 @@ module.exports = server => {
             socket.join(channelId);
         });
 
+        socket.on("/typing", async (channelId) => {
+            // TODO check if user has permission to type in this channel
+
+            
+            realTimeUser.typing = true;
+            realTimeUser.typingIn = channelId;
+
+            await realTimeUser.save();
+        });
+
         socket.on("disconnect", async () => {
             const user = socket.user;
             const realTimeUser = await RealTimeUserModel.findOne({ snowflake: user.snowflake });
@@ -69,6 +88,8 @@ module.exports = server => {
             }
         });
     });
+
+    
 
     eventEmitter.on("message", async (message) => {
         const channel = await Channel.findOne({ snowflake: message.channel });

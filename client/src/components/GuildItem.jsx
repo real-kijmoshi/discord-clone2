@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import IconFromName from "./IconFromName";
+import PropTypes from "prop-types";
 
 
 function GuildItem({ guild, selected }) {
@@ -20,5 +21,10 @@ function GuildItem({ guild, selected }) {
     </Link>
   );
 }
+
+GuildItem.propTypes = {
+  guild: PropTypes.object.isRequired,
+  selected: PropTypes.bool.isRequired,
+};
 
 export default GuildItem;

@@ -24,3 +24,4 @@ const parse = (snowflake) => {
         dataType: types[dataType],
     };
 }
+export default parse;

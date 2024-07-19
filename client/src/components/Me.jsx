@@ -6,3 +6,5 @@ function Me() {
     </div>
   );
 }
+
+export default Me;

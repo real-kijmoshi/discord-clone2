@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
 import axios from "../utils/axios";
-import { head } from "lodash";
 import { useState } from "react";
 
 function GuildInfo() {

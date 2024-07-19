@@ -26,7 +26,6 @@ router.get("/icon/:id", (req, res) => {
         return res.status(404).send("Not found");
     }
 
-    console.log(path)
     res.sendFile(path)
 });
 

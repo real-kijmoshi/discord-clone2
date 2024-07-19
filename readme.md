@@ -43,6 +43,7 @@
 - [ ] Video channels
 - [ ] Notifications
 
+
 ## How to Run
 
 1. Clone the repository
@@ -65,7 +66,8 @@ EMAIL_PASSWORD=your_email_password
 ```
 VITE_API_URL=http://localhost:3000/api/v1
 VITE_CDN_URL=http://localhost:3000/cdn
-VITE_GATEWAY_URL=http://localhost:3000
+VITE_GATEWAY_URL=http://localhost:3000/gateway
+(i was too to implement only one api url)
 ```
 
 5. Run `npm run dev` in the client directory

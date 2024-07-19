@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 
 function IconFromName({ name }) {
@@ -37,5 +38,8 @@ function IconFromName({ name }) {
         <img src={url} className="w-16 h-16 rounded-full" alt="guild icon" title={name} />
     );
 }
+IconFromName.propTypes = {
+    name: PropTypes.string.isRequired,
+};
 
 export default IconFromName;

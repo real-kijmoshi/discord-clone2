@@ -4,6 +4,7 @@ import GuildItem from "./GuildItem";
 import { Link } from "react-router-dom";
 import axios from "../utils/axios";
 import logo from "../assets/logo.svg";
+import PropTypes from "prop-types";
 
 function GuildList({ selectedGuild }) {
     const { guilds, loading } = useGuilds(localStorage.getItem("token"));
@@ -71,10 +72,7 @@ function GuildList({ selectedGuild }) {
       </div>
 
       <div className="flex items-center p-3 hover:bg-gray-700 rounded-lg cursor-pointer transition justify-center" onClick={() => setShowModal(true)}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-        </svg>
+        +
       </div>
 
       {
@@ -82,7 +80,7 @@ function GuildList({ selectedGuild }) {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-gray-800 p-4 rounded-lg">
               <button className="absolute top-2 right-2" onClick={() => setShowModal(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
                   <path d="M3.646 3.646a.5.5 0 0 1 .708 0L8 7.293l3.646-3.647a.5.5 0 0 1 .708.708L8.707 8l3.647 3.646a.5.5 0 0 1-.708.708L8 8.707l-3.646 3.647a.5.5 0 0 1-.708-.708L7.293 8 3.646 4.354a.5.5 0 0 1 0-.708z"/>
                 </svg>
               </button>
@@ -127,7 +125,7 @@ function GuildList({ selectedGuild }) {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-gray-800 p-4 rounded-lg">
               <button className="absolute top-2 right-2" onClick={() => setShowCreateModal(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="bi bi-x-lg" viewBox="0 0 16 16">
                   <path d="M3.646 3.646a.5.5 0 0 1 .708 0L8 7.293l3.646-3.647a.5.5 0 0 1 .708.708L8.707 8l3.647 3.646a.5.5 0 0 1-.708.708L8 8.707l-3.646 3.647a.5.5 0 0 1-.708-.708L7.293 8 3.646 4.354a.5.5 0 0 1 0-.708z"/>
                 </svg>
               </button>
@@ -143,5 +141,8 @@ function GuildList({ selectedGuild }) {
     </div>
   );
 }
+GuildList.propTypes = {
+    selectedGuild: PropTypes.string,
+};
 
 export default GuildList;

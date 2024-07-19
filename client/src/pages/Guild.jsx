@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import ChannelsSection from "../components/ChannelsSection";
+import PropTypes from "prop-types";
 
 function AtMe() {
     return (
@@ -21,6 +22,9 @@ function NormalGuild({ guildId }) {
         </div>
     );
 }
+NormalGuild.propTypes = {
+    guildId: PropTypes.string.isRequired,
+};
 
 function Guild() {
     const { guildID } = useParams();

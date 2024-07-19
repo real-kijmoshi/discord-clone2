@@ -1,21 +1,18 @@
-import { Link, useParams } from "react-router-dom";
-import useUser from "../hooks/useUser";
+import { useParams } from "react-router-dom";
 import GuildList from "./GuildList";
+import { useEffect } from "react";
+import PropTypes from "prop-types";
 
 
 function Layout({ children }) {
-    const { guildID, channelID } = useParams();
-    const { user, loading } = useUser(localStorage.getItem("token"));
+    const { guildID } = useParams();
 
-    if (loading) {
-        return <div>Loading...</div>;
-    } 
+    useEffect(() => {
+        if(!localStorage.getItem("token")) {
+            window.location.href = "/login";
+        }
+    });
 
-    if (!user) {
-        return null;
-    }
-
-  
     return (
         <div className="flex flex-row h-screen w-screen">
             <div className="flex flex-col justify-between bg-gray-800 text-white p-1 justify-between w-fit">
@@ -28,6 +25,8 @@ function Layout({ children }) {
         </div>
     )
 }
-
+Layout.propTypes = {
+    children: PropTypes.node.isRequired,
+};
 
 export default Layout;

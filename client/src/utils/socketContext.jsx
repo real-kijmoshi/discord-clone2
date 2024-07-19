@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import PropTypes from 'prop-types';
 
 const SocketContext = createContext();
 
@@ -19,7 +20,17 @@ export const SocketProvider = ({ children }) => {
         }
       });
       setSocket(newSocket);
+      
+      newSocket.once("connect", () => {
+        console.log("Connected to gateway");
+      });
+
+      newSocket.on("error", (error) => {
+        console.error("Connection error:", error);
+      })
+
       return () => newSocket.close();
+
     }
   }, []);
 
@@ -28,4 +39,8 @@ export const SocketProvider = ({ children }) => {
       {children}
     </SocketContext.Provider>
   );
+};
+
+SocketProvider.propTypes = {
+  children: PropTypes.node.isRequired
 };
