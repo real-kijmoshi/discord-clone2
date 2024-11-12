@@ -1,11 +1,16 @@
 <p align="center">
   <img src="/logo.svg" width="200" height="240" alt="Discord Clone Logo" style="display: block; margin-bottom: 20px;">
 </p>
+## temporary end of work
+check out https://github.com/real-kijmoshi/Chimera
+
 
 <h1 align="center">Discord Clone</h1>
 <p align="center">
   Tired of searching for a good Discord clone on GitHub and finding none? So was I! That's why I decided to create my own.
 </p>
+
+
 
 ## Technologies
 
